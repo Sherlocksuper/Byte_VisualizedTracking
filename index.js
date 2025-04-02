@@ -73,7 +73,7 @@ const getTopAndLeftImpl = (targetElement, tooltip) => {
         }
     }
 
-    return { dataTestId, top, left , width, height}
+    return { dataTestId, top, left , width, height, tooltip }
 }
 
 const getTopAndLeft = (targetElement,tooltip) => {
@@ -113,25 +113,36 @@ const processOneElement = (node) => {
 
             document.body.appendChild(tooltip);
 
-            element.addEventListener('mouseover', () => {
-                const { top, left } = getTopAndLeft(element, tooltip)
-                tooltip.style.top = `${top}px`;
-                tooltip.style.left = `${left}px`;
-                tooltip.style.visibility = 'visible'
-            });
-
-            element.addEventListener('mouseout', () => {
-                tooltip.style.visibility = 'hidden';
-                // 找到并删除当前tooltip的位置信息,根据dataTestId
-                for (let i = 0; i < tooltipPositionStore.length; i++) {
-                    if (tooltipPositionStore[i].dataTestId === dataTestId) {
-                        tooltipPositionStore.splice(i, 1);
-                        break;
-                    }
-                }
-            });
+            tooltipPositionStore.push({ dataTestId, top: 0, left: 0, width: 0, height: 0, tooltip })
         }
     }
 }
 
 processOneElement(rootElement)
+
+rootElement.addEventListener('mouseover', (event) => {
+    const targetElement = event.target;
+    const tooltip = tooltipPositionStore.findLast((item) => item.dataTestId === targetElement.getAttribute(key))?.tooltip
+
+    if (!tooltip) return;
+
+    const {top, left} = getTopAndLeft(targetElement, tooltip)
+    tooltip.style.top = `${top}px`
+    tooltip.style.left = `${left}px`
+    tooltip.style.visibility = 'visible'
+})
+
+rootElement.addEventListener('mouseover', (event)=>{
+    const targetElement = event.target;
+    const tooltip = tooltipPositionStore.findLast((item) => item.dataTestId === targetElement.getAttribute(key)).tooltip
+
+    if (!tooltip) return;
+
+    tooltip.style.visibility = 'hidden'
+    for (let i = 0; i < tooltipPositionStore.length; i++) {
+        if (tooltipPositionStore[i].dataTestId === targetElement.getAttribute(key)) {
+            tooltipPositionStore.splice(i, 1)
+            break;
+        }
+    }
+})

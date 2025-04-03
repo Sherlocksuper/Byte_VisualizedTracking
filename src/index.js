@@ -76,12 +76,12 @@ const getTopAndLeftImpl = (targetElement, tooltip) => {
     return { dataTestId, top, left , width, height, tooltip }
 }
 
+
 const getTopAndLeft = (targetElement,tooltip) => {
     const position = getTopAndLeftImpl(targetElement, tooltip);
     tooltipPositionStore.push(position)
     return position
 }
-
 
 const processOneElement = (node) => {
     if (node.childNodes.length >= 0) {
@@ -120,29 +120,69 @@ const processOneElement = (node) => {
 
 processOneElement(rootElement)
 
-rootElement.addEventListener('mouseover', (event) => {
+// 定义鼠标移入事件处理函数
+const handleMouseOverShow = (event) => {
     const targetElement = event.target;
-    const tooltip = tooltipPositionStore.findLast((item) => item.dataTestId === targetElement.getAttribute(key))?.tooltip
+    const tooltip = tooltipPositionStore.findLast((item) => item.dataTestId === targetElement.getAttribute(key))?.tooltip;
 
     if (!tooltip) return;
 
-    const {top, left} = getTopAndLeft(targetElement, tooltip)
-    tooltip.style.top = `${top}px`
-    tooltip.style.left = `${left}px`
-    tooltip.style.visibility = 'visible'
-})
+    const { top, left } = getTopAndLeft(targetElement, tooltip);
+    tooltip.style.top = `${top}px`;
+    tooltip.style.left = `${left}px`;
+    tooltip.style.visibility = 'visible';
+};
 
-rootElement.addEventListener('mouseover', (event)=>{
+// 定义鼠标移出事件处理函数
+const handleMouseOverHide = (event) => {
     const targetElement = event.target;
-    const tooltip = tooltipPositionStore.findLast((item) => item.dataTestId === targetElement.getAttribute(key)).tooltip
+    const tooltip = tooltipPositionStore.findLast((item) => item.dataTestId === targetElement.getAttribute(key))?.tooltip;
 
     if (!tooltip) return;
 
-    tooltip.style.visibility = 'hidden'
+    tooltip.style.visibility = 'hidden';
     for (let i = 0; i < tooltipPositionStore.length; i++) {
         if (tooltipPositionStore[i].dataTestId === targetElement.getAttribute(key)) {
-            tooltipPositionStore.splice(i, 1)
+            tooltipPositionStore.splice(i, 1);
             break;
         }
     }
-})
+};
+
+function start() {
+    console.log('init');
+    // 添加鼠标移入事件监听
+    rootElement.addEventListener('mouseover', handleMouseOverShow);
+    // 添加鼠标移出事件监听
+    rootElement.addEventListener('mouseout', handleMouseOverHide);
+}
+
+function stop() {
+    console.log('stop');
+    // 移除鼠标移入事件监听
+    rootElement.removeEventListener('mouseover', handleMouseOverShow);
+    // 移除鼠标移出事件监听
+    rootElement.removeEventListener('mouseover', handleMouseOverHide);
+}
+
+function toggleOpen() {
+    const id = 'toggle-open'
+    const element = document.getElementById(id)
+
+    if (element) {
+        const isChecked = element.checked;
+        isChecked ? start() : stop()
+    }
+}
+
+function showAll() {
+    console.log('showAll')
+}
+
+function closeAll() {
+    console.log('closeAll')
+}
+
+function toggleAll() {
+    console.log('toggleAll')
+}
